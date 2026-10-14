@@ -1,0 +1,12 @@
+{
+  "annee": 2026,
+  "vente": 12.3,
+  "service": 21.2,
+  "chambres": {"artisan": [0.52, 0.78], "commercant": [0.115, 0.144]},
+  "vfl": [1.0, 1.7],
+  "acre": 0.75,
+  "acre_avant_2026_07": 0.5,
+  "maj": "2026-10-15",
+  "sources": "entreprendre.service-public.gouv.fr F37353 (cotisations micro), F23459 (CFP), F37483 (CMA/CCI), F23267 (versement libératoire), F11677 (ACRE)",
+  "explication": "Taux de cotisations URSSAF des micro-entrepreneurs (en % du CA) lus chaque mois par Hunparts. vente = vente de marchandises (BIC), service = prestations commerciales et artisanales (BIC). chambres = [vente, service] : CFP + taxe chambre de métiers (artisan) ou CCI (commerçant). vfl = versement libératoire [vente, service]. acre = coefficient du taux pendant l'ACRE."
+}
