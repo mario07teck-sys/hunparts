@@ -1,0 +1,83 @@
+# Robot des taux URSSAF de Hunparts. Ce qu'il fait et pourquoi : robot/verifier_taux.py
+name: Taux URSSAF
+
+on:
+  schedule:
+    - cron: "17 7 5,20 * *"        # le 5 et le 20 de chaque mois, le matin en France
+  workflow_dispatch:
+    inputs:
+      essai:
+        description: "Essai : comparer sans rien modifier ni prévenir"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write                  # corriger taux_urssaf.json
+  issues: write                    # prévenir par un message
+
+concurrency:
+  group: taux-urssaf               # jamais deux passages en même temps
+
+jobs:
+  taux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60            # au pire : cinq questions, quatre essais chacune, attentes comprises (environ 30 minutes)
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Contrôles du robot (sans internet)
+        run: python3 robot/test_verifier_taux.py
+
+      - name: Comparer le fichier aux taux de l'URSSAF
+        id: robot
+        run: python3 robot/verifier_taux.py ${{ inputs.essai && '--essai' || '' }}
+
+      - name: Enregistrer le fichier
+        if: steps.robot.outputs.etat == 'change' || steps.robot.outputs.etat == 'controle'
+        env:
+          ETAT: ${{ steps.robot.outputs.etat }}
+        run: |
+          git config user.name "robot-taux"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add taux_urssaf.json
+          if [ "$ETAT" = change ]; then
+            git commit -m "Taux URSSAF corrigés par le robot"
+          else
+            git commit -m "Taux URSSAF contrôlés par le robot : inchangés"
+          fi
+          git pull --rebase --quiet      # le dépôt a pu recevoir autre chose pendant le passage
+          git push
+
+      # Un message (onglet Issues, avec e-mail) quand les taux ont changé, ou quand le robot n'a pas pu finir son travail.
+      - name: Prévenir
+        if: always() && inputs.essai != true && (steps.robot.outputs.etat == 'change' || job.status != 'success')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETAT: ${{ steps.robot.outputs.etat }}
+          RESULTAT: ${{ job.status }}
+          PASSAGE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITRE: "Taux URSSAF : le robot n'a pas pu faire son contrôle"
+        run: |
+          if [ "$RESULTAT" = success ]; then
+            gh issue create --title "Taux URSSAF mis à jour le $(date +%d/%m/%Y)" --body-file message.md
+            exit 0
+          fi
+          if [ "$ETAT" = change ] && [ -f message.md ]; then
+            # les nouveaux taux ont été lus, mais l'enregistrement a échoué : le dire avant la liste des changements
+            { printf '%s\n\n%s\n\n' "@mario07teck-sys **Les taux de l'URSSAF ont changé, mais le robot n'a pas réussi à enregistrer le fichier corrigé.** Hunparts garde donc les anciens taux pour l'instant." \
+                "À faire : demander à Claude de regarder (« le robot des taux URSSAF n'a pas pu enregistrer »), puis fermer ce message. Ce que le robot voulait écrire :"
+              grep '^- ' message.md || true; } > alerte.md
+          elif [ "$ETAT" = illisible ] && [ -f message.md ]; then
+            cp message.md alerte.md
+          else
+            printf '%s\n\n%s\n' "@mario07teck-sys Le robot des taux URSSAF s'est arrêté avant la fin de son contrôle. Il n'a rien modifié." \
+              "À faire : demander à Claude de regarder (« le robot des taux URSSAF est en panne »), puis fermer ce message." > alerte.md
+          fi
+          printf '\n%s\n' "Détail du passage : $PASSAGE" >> alerte.md
+          # un seul message ouvert à la fois : s'il y en a déjà un, la nouvelle alerte s'ajoute dessous
+          numero=$(gh issue list --state open --limit 200 --json number,title --jq '.[] | select(.title == env.TITRE) | .number' | head -n 1)
+          if [ -n "$numero" ]; then
+            gh issue comment "$numero" --body-file alerte.md
+          else
+            gh issue create --title "$TITRE" --body-file alerte.md
+          fi

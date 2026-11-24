@@ -1,0 +1,84 @@
+{
+ "jour": "2026-11-24",
+ "nature": "artisanale",
+ "prestations_an": 12000000,
+ "ventes_an": 0,
+ "questions": [
+  "dirigeant . auto-entrepreneur . cotisations et contributions . cotisations",
+  "dirigeant . auto-entrepreneur . cotisations et contributions . CFP",
+  "dirigeant . auto-entrepreneur . cotisations et contributions . TFC",
+  "dirigeant . auto-entrepreneur . impôt . versement libératoire . montant",
+  "dirigeant . auto-entrepreneur . cotisations et contributions . cotisations . vente restauration hébergement . taux",
+  "dirigeant . auto-entrepreneur . cotisations et contributions . cotisations . service BIC . taux"
+ ],
+ "evaluate": [
+  {
+   "nodeValue": 212000,
+   "unit": {
+    "numerators": [
+     "€"
+    ],
+    "denominators": [
+     "mois"
+    ]
+   },
+   "missingVariables": {}
+  },
+  {
+   "nodeValue": 3000,
+   "unit": {
+    "numerators": [
+     "€"
+    ],
+    "denominators": [
+     "mois"
+    ]
+   },
+   "missingVariables": {}
+  },
+  {
+   "nodeValue": 4800,
+   "unit": {
+    "numerators": [
+     "€"
+    ],
+    "denominators": [
+     "mois"
+    ]
+   },
+   "missingVariables": {}
+  },
+  {
+   "nodeValue": 204000,
+   "unit": {
+    "numerators": [
+     "€"
+    ],
+    "denominators": [
+     "an"
+    ]
+   },
+   "missingVariables": {}
+  },
+  {
+   "nodeValue": 12.3,
+   "unit": {
+    "numerators": [
+     "%"
+    ],
+    "denominators": []
+   },
+   "missingVariables": {}
+  },
+  {
+   "nodeValue": 21.2,
+   "unit": {
+    "numerators": [
+     "%"
+    ],
+    "denominators": []
+   },
+   "missingVariables": {}
+  }
+ ]
+}
